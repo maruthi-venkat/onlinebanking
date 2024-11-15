@@ -4,23 +4,28 @@ import React from 'react'
 import BankCard from './BankCard'
 
 const RightSidebar = ({ user, transactions, banks }:RightSidebarProps) => {
-  return (
+  
+    if (!user) {
+        return <div>User data is not available</div>;  // Return a fallback UI if 'user' is null or undefined
+    }
+  
+    return (
     <aside className="right-sidebar">
         <section className="flex flex-col pb-8">
             <div className="profile-banner" />
             <div className="profile">
                 <div className="profile-img">
                     <span className="text-5xl font-bold text-blue-500">
-                        {user.firstName[0]}
+                        {user.name ? user.name[0] : 'U'}
                     </span>
                 </div>
 
                 <div className="profile-details">
                     <h1 className="profile-name">
-                        {user.firstName} {user.lastName}
+                        {user.name || 'Guest'}
                     </h1>
                     <p className="profile-email">
-                        {user.email}
+                        {user.email || 'No email provided'}
                     </p>
                 </div>
             </div>
@@ -48,7 +53,7 @@ const RightSidebar = ({ user, transactions, banks }:RightSidebarProps) => {
                         <BankCard 
                             key={banks[0].$id}
                             account={banks[0]}
-                            userName={`${user.firstName} ${user.lastName}`}
+                            userName={user.name}
                             showBalance={false}
                         />
                     </div>
@@ -57,7 +62,7 @@ const RightSidebar = ({ user, transactions, banks }:RightSidebarProps) => {
                             <BankCard 
                                 key={banks[0].$id}
                                 account={banks[0]}
-                                userName={`${user.firstName} ${user.lastName}`}
+                                userName={user.name}
                                 showBalance={false}
                             />
                         </div>
