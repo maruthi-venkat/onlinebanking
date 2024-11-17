@@ -6,7 +6,7 @@ import { getLoggedInUser } from '@/lib/actions/user.action';
 import { getAccount, getAccounts } from '@/lib/actions/bank.actions';
 import RecentTransactions from '@/components/ui/RecentTransactions';
 const Home = async ({ searchParams }: { searchParams: { id: string, page: string } }) => {
-  const {id,page} = await searchParams;
+  const {id,page} = searchParams;
   const currentPage = Number(page) || 1;
   const loggedIn = await getLoggedInUser();
   console.log(loggedIn);
