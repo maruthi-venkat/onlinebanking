@@ -69,6 +69,18 @@ export const createTransfer = async ({
   amount,
 }: TransferParams) => {
   try {
+    // Validate source and destination funding source URLs
+    console.log("Validating funding sources...");
+    const sourceFundingSource = await dwollaClient.get(sourceFundingSourceUrl);
+    const destinationFundingSource = await dwollaClient.get(destinationFundingSourceUrl);
+
+    if (!sourceFundingSource || !destinationFundingSource) {
+      throw new Error("Invalid source or destination funding source URLs.");
+    }
+
+    console.log("Source Funding Source:", sourceFundingSource.body);
+    console.log("Destination Funding Source:", destinationFundingSource.body);
+
     const requestBody = {
       _links: {
         source: {
@@ -83,11 +95,24 @@ export const createTransfer = async ({
         value: amount,
       },
     };
-    return await dwollaClient
-      .post("transfers", requestBody)
-      .then((res) => res.headers.get("location"));
+
+    console.log("Creating transfer with request body:", requestBody);
+
+    const transferResponse = await dwollaClient.post("transfers", requestBody);
+    const transferLocation = transferResponse.headers.get("location");
+
+    console.log("Transfer created successfully. Location:", transferLocation);
+    return transferLocation;
   } catch (err) {
-    console.error("Transfer fund failed: ", err);
+    if (err instanceof Error) {
+      // Handle as a generic Error
+      console.error("Transfer fund failed: ", err.message);
+      console.error("Stack trace: ", err.stack);
+    } else {
+      // Handle unknown error
+      console.error("An unknown error occurred: ", err);
+    }
+    throw new Error("Transfer failed. Please check the funding source details and try again.");  
   }
 };
 
