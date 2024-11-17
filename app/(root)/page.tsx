@@ -5,8 +5,14 @@ import RightSidebar from '@/components/ui/RightSidebar';
 import { getLoggedInUser } from '@/lib/actions/user.action';
 import { getAccount, getAccounts } from '@/lib/actions/bank.actions';
 import RecentTransactions from '@/components/ui/RecentTransactions';
-const Home = async ({ searchParams }: { searchParams: { id: string, page: string } }) => {
-  const {id,page} = searchParams;
+
+interface SearchParams {
+  id?: string;
+  page?: string;
+}
+
+const Home = async ({ searchParams }: { searchParams: SearchParams }) => {
+  const {id,page} = searchParams || {};
   const currentPage = Number(page) || 1;
   const loggedIn = await getLoggedInUser();
   console.log(loggedIn);
@@ -18,7 +24,7 @@ const Home = async ({ searchParams }: { searchParams: { id: string, page: string
   const accountsData = accounts?.data;
   const appwriteItemId = (id as string) || accountsData[0]?.appwriteItemId;
 
-  const account = await getAccount({ appwriteItemId})
+  const account = await getAccount({ appwriteItemId });
 
   console.log({
     accountsData,
