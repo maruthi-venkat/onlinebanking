@@ -7,11 +7,11 @@ import { getAccount, getAccounts } from '@/lib/actions/bank.actions';
 import RecentTransactions from '@/components/ui/RecentTransactions';
 
 interface SearchParams {
-  id?: string;
-  page?: string;
+  id?: string | null;
+  page?: string | null;
 }
 
-const Home = async ({ searchParams }: { searchParams: SearchParams }) => {
+const Home = async ({ searchParams }: { searchParams?: SearchParams }) => {
   const {id,page} = searchParams || {};
   const currentPage = Number(page) || 1;
   const loggedIn = await getLoggedInUser();
