@@ -4,6 +4,11 @@ import { topCategoryStyles } from "@/constants";
 import { cn } from "@/lib/utils";
 
 import { Progress } from "./progress";
+interface ProgressProps {
+  value: number;
+  className?: string;
+  indicatorClassName?: string; // Add this line
+}
 
 const Category = ({ category }: CategoryProps) => {
   const {
