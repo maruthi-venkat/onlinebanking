@@ -1,5 +1,5 @@
-import React from 'react'
-import HeaderBox from '@/components/ui/HeaderBox'
+import React from 'react';
+import HeaderBox from '@/components/ui/HeaderBox';
 import TotalBalanceBox from '@/components/ui/TotalBalanceBox';
 import RightSidebar from '@/components/ui/RightSidebar';
 import { getLoggedInUser } from '@/lib/actions/user.action';
@@ -11,59 +11,72 @@ interface SearchParams {
   page?: string | null;
 }
 
-const Home = async ({ searchParams }: { searchParams?: SearchParams }) => {
-  const {id,page} = searchParams || {};
+const Home = async ({ searchParams }: { searchParams?: Promise<Record<string, string | null>> }) => {
+  const resolvedSearchParams = (await searchParams) || {};
+  const id = resolvedSearchParams.id || null;
+  const page = resolvedSearchParams.page || null;
   const currentPage = Number(page) || 1;
-  const loggedIn = await getLoggedInUser();
-  console.log(loggedIn);
 
-  const accounts = await getAccounts({ userId: loggedIn.$id})
+  let loggedIn, accounts, account;
 
-  if(!accounts) return;
+  try {
+    loggedIn = await getLoggedInUser();
+    if (!loggedIn) {
+      return <div>Please log in to access your account.</div>;
+    }
 
-  const accountsData = accounts?.data;
-  const appwriteItemId = (id as string) || accountsData[0]?.appwriteItemId;
+    accounts = await getAccounts({ userId: loggedIn.$id });
+    if (!accounts?.data?.length) {
+      return <div>No accounts available. Please add an account.</div>;
+    }
 
-  const account = await getAccount({ appwriteItemId });
+    const accountsData = accounts.data;
+    const appwriteItemId = id || (accountsData && accountsData.length > 0 ? accountsData[0]?.appwriteItemId : null);
 
-  console.log({
-    accountsData,
-    account
-  })
+    if (!appwriteItemId) {
+      return <div>No account ID found. Please add or select an account to proceed.</div>;
+    }
 
-  return (
-    <section className="home">
-      <div className="home-content">
-        <header className="home-header">
-          <HeaderBox
-            type = "greeting"
-            title = "Welcome"
-            user={loggedIn?.firstName || 'Guest'}
-            subtext = "Access and manage your account and transactions effieciently."
-          />
+    account = await getAccount({ appwriteItemId });
 
-          <TotalBalanceBox
+    if (!account) {
+      return <div>Failed to retrieve account details. Please try again later.</div>;
+    }
+
+    return (
+      <section className="home">
+        <div className="home-content">
+          <header className="home-header">
+            <HeaderBox
+              type="greeting"
+              title="Welcome"
+              user={loggedIn?.firstName || 'Guest'}
+              subtext="Access and manage your account and transactions efficiently."
+            />
+            <TotalBalanceBox
+              accounts={accountsData}
+              totalBanks={accounts?.totalBanks}
+              totalCurrentBalance={accounts?.totalCurrentBalance}
+            />
+          </header>
+          <RecentTransactions
             accounts={accountsData}
-            totalBanks={accounts?.totalBanks}
-            totalCurrentBalance={accounts?.totalCurrentBalance}
+            transactions={account?.transactions}
+            appwriteItemId={appwriteItemId}
+            page={currentPage}
           />
-        </header>
-
-        <RecentTransactions 
-          accounts = {accountsData}
-          transactions = {account?.transactions}
-          appwriteItemId = {appwriteItemId}
-          page={currentPage}
+        </div>
+        <RightSidebar
+          user={loggedIn}
+          transactions={account?.transactions}
+          banks={accountsData?.slice(0, 2)}
         />
-      </div>
+      </section>
+    );
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return <div>Error loading your data. Please try again later.</div>;
+  }
+};
 
-      <RightSidebar
-        user={loggedIn}
-        transactions={account?.transactions}
-        banks={accountsData?.slice(0, 2)}
-      />
-    </section>
-  )
-}
-
-export default Home
+export default Home;
